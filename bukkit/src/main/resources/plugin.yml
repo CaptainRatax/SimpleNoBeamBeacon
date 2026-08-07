@@ -1,0 +1,8 @@
+name: SimpleNoBeamBeacon
+version: '${version}'
+main: com.captainratax.simplenobeambeacon.SimpleNoBeamBeaconPlugin
+description: Hides a beacon beam with tinted glass while keeping its effects active.
+author: CaptainRatax
+license: MIT
+api-version: '1.17'
+folia-supported: true

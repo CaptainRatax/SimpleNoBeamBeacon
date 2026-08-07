@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8.7",
+  "package": "com.captainratax.simplenobeambeacon.sponge.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "server": [
+    "BeaconBlockEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixinextras": {
+    "minVersion": "0.5.3"
+  }
+}
