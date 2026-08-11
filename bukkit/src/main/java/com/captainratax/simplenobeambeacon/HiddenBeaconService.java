@@ -33,9 +33,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,10 +42,10 @@ final class HiddenBeaconService implements Listener {
     private static final long REFRESH_PERIOD_TICKS = 80L;
     private static final int BEAM_COLUMN_HAS_TINTED_GLASS = 1;
     private static final int BEAM_COLUMN_IS_BLOCKED = 1 << 1;
-    private static final Method PAPER_GET_EFFECT_RANGE = findPaperEffectRangeMethod();
 
     private final Plugin plugin;
     private final SchedulerFacade scheduler;
+    private final ServerCompatibility compatibility;
     private final ConcurrentHashMap<BeaconKey, Object> tracked = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<BeaconKey, HiddenBeacon> active = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Object> scheduledPlayers = new ConcurrentHashMap<>();
@@ -54,6 +53,7 @@ final class HiddenBeaconService implements Listener {
     HiddenBeaconService(Plugin plugin, SchedulerFacade scheduler) {
         this.plugin = plugin;
         this.scheduler = scheduler;
+        this.compatibility = new ServerCompatibility(plugin);
     }
 
     void start() {
@@ -81,17 +81,23 @@ final class HiddenBeaconService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        inspectChangedBlock(event.getBlockPlaced());
+        Block placed = event.getBlockPlaced();
+        Material type = placed.getType();
+        if (type == Material.BEACON || type == Material.TINTED_GLASS || hasTrackedBeaconBelow(placed)) {
+            inspectChangedBlock(placed);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Block broken = event.getBlock();
+        Material type = broken.getType();
+        boolean relevant = type == Material.BEACON
+                || type == Material.TINTED_GLASS
+                || hasTrackedBeaconBelow(broken);
         forgetChangedBlock(broken);
-        if (broken.getType() == Material.TINTED_GLASS) {
-            deactivateColumnBelow(broken);
-            Location location = broken.getLocation();
-            scheduler.runLater(location, 1L, () -> scanBeaconsBelow(location.getBlock()));
+        if (relevant) {
+            scheduleChangedBlockScan(broken.getLocation());
         }
     }
 
@@ -100,7 +106,7 @@ final class HiddenBeaconService implements Listener {
         Block changed = event.getBlock();
         Material type = changed.getType();
         if (type == Material.BEACON || type == Material.TINTED_GLASS) {
-            scheduler.runLater(changed.getLocation(), 1L, () -> inspectChangedBlock(changed));
+            scheduleChangedBlockScan(changed.getLocation());
         }
     }
 
@@ -165,6 +171,8 @@ final class HiddenBeaconService implements Listener {
         }
         if (block.getType() == Material.TINTED_GLASS) {
             scanBeaconsBelow(block);
+        } else {
+            refreshTrackedBeaconsBelow(block);
         }
     }
 
@@ -232,12 +240,24 @@ final class HiddenBeaconService implements Listener {
         }
 
         Beacon beacon = (Beacon) state;
-        PotionEffect primaryEffect = beacon.getPrimaryEffect();
-        if (primaryEffect == null) {
+        ServerCompatibility.SelectedEffects selected = compatibility.readSelectedEffects(beacon);
+        if (selected == null) {
             return deactivateIfCurrent(key, generation);
         }
 
-        PotionEffect secondaryEffect = beacon.getSecondaryEffect();
+        PotionEffectType primaryEffect = selected.primary();
+        PotionEffectType secondaryEffect = selected.secondary();
+        boolean upgradedPrimary = selected.upgradedPrimary();
+        HiddenBeacon previous = active.get(key);
+        if (!selected.exact()
+                && previous != null
+                && previous.generation() == generation
+                && previous.primary().equals(primaryEffect)
+                && secondaryEffect == null
+                && !upgradedPrimary) {
+            secondaryEffect = previous.secondary();
+            upgradedPrimary = previous.upgradedPrimary();
+        }
         if (tracked.get(key) != generation) {
             return false;
         }
@@ -248,9 +268,9 @@ final class HiddenBeaconService implements Listener {
                 key.z(),
                 tier,
                 resolveEffectRange(beacon, tier),
-                primaryEffect.getType(),
-                secondaryEffect == null ? null : secondaryEffect.getType(),
-                primaryEffect.getAmplifier() > 0,
+                primaryEffect,
+                secondaryEffect,
+                upgradedPrimary,
                 generation
         );
         active.put(key, snapshot);
@@ -286,11 +306,18 @@ final class HiddenBeaconService implements Listener {
         World world = beacon.getWorld();
         int result = 0;
         for (int y = beacon.getY() + 1; y < world.getMaxHeight(); y++) {
-            Material type = world.getBlockAt(beacon.getX(), y, beacon.getZ()).getType();
-            if (type == Material.TINTED_GLASS) {
+            Block block = world.getBlockAt(beacon.getX(), y, beacon.getZ());
+            if (block.getType() == Material.TINTED_GLASS) {
                 result |= BEAM_COLUMN_HAS_TINTED_GLASS;
-            } else if (type != Material.BEDROCK && type.isOccluding()) {
+                continue;
+            }
+
+            if (compatibility.blocksBeaconBeam(block)) {
                 result |= BEAM_COLUMN_IS_BLOCKED;
+            }
+
+            if (result == (BEAM_COLUMN_HAS_TINTED_GLASS | BEAM_COLUMN_IS_BLOCKED)) {
+                break;
             }
         }
         return result;
@@ -387,9 +414,6 @@ final class HiddenBeaconService implements Listener {
     private void schedulePistonRescan(Collection<Block> movedBlocks, BlockFace direction) {
         for (Block source : movedBlocks) {
             forgetChangedBlock(source);
-            if (source.getType() == Material.TINTED_GLASS) {
-                deactivateColumnBelow(source);
-            }
 
             Location sourceLocation = source.getLocation();
             Location forward = sourceLocation.clone().add(
@@ -402,26 +426,34 @@ final class HiddenBeaconService implements Listener {
                     direction.getModY(),
                     direction.getModZ()
             );
-            scheduleChangedAreaScan(sourceLocation);
-            scheduleChangedAreaScan(forward);
-            scheduleChangedAreaScan(backward);
+            scheduleChangedBlockScan(sourceLocation);
+            scheduleChangedBlockScan(forward);
+            scheduleChangedBlockScan(backward);
         }
     }
 
-    private void scheduleChangedAreaScan(Location location) {
+    private void scheduleChangedBlockScan(Location location) {
         scheduler.runLater(location, 1L, () -> {
-            Block changed = location.getBlock();
-            inspectChangedBlock(changed);
-            inspectChangedBlock(changed.getRelative(BlockFace.DOWN));
-            inspectChangedBlock(changed.getRelative(BlockFace.UP));
+            World world = location.getWorld();
+            if (world == null) {
+                return;
+            }
+            int y = location.getBlockY();
+            if (y >= world.getMinHeight() && y < world.getMaxHeight()) {
+                inspectChangedBlock(world.getBlockAt(location.getBlockX(), y, location.getBlockZ()));
+            }
         });
     }
 
     private void forgetDestroyedBlocks(Collection<Block> blocks) {
         for (Block block : blocks) {
+            Material type = block.getType();
+            boolean relevant = type == Material.BEACON
+                    || type == Material.TINTED_GLASS
+                    || hasTrackedBeaconBelow(block);
             forgetChangedBlock(block);
-            if (block.getType() == Material.TINTED_GLASS) {
-                deactivateColumnBelow(block);
+            if (relevant) {
+                scheduleChangedBlockScan(block.getLocation());
             }
         }
     }
@@ -431,20 +463,41 @@ final class HiddenBeaconService implements Listener {
         for (int y = top.getY() - 1; y >= world.getMinHeight(); y--) {
             Block candidate = world.getBlockAt(top.getX(), y, top.getZ());
             if (candidate.getType() == Material.BEACON) {
-                trackIfHidden(candidate);
+                BeaconKey key = BeaconKey.from(candidate.getLocation());
+                Object generation = tracked.get(key);
+                if (generation == null) {
+                    trackIfHidden(candidate);
+                } else {
+                    refresh(key, generation);
+                }
             }
         }
     }
 
-    private void deactivateColumnBelow(Block top) {
+    private void refreshTrackedBeaconsBelow(Block top) {
         UUID worldId = top.getWorld().getUID();
-        int x = top.getX();
-        int y = top.getY();
-        int z = top.getZ();
-        active.keySet().removeIf(key -> key.worldId().equals(worldId)
-                && key.x() == x
-                && key.y() < y
-                && key.z() == z);
+        for (Map.Entry<BeaconKey, Object> entry : tracked.entrySet()) {
+            BeaconKey key = entry.getKey();
+            if (key.worldId().equals(worldId)
+                    && key.x() == top.getX()
+                    && key.y() < top.getY()
+                    && key.z() == top.getZ()) {
+                refresh(key, entry.getValue());
+            }
+        }
+    }
+
+    private boolean hasTrackedBeaconBelow(Block top) {
+        UUID worldId = top.getWorld().getUID();
+        for (BeaconKey key : tracked.keySet()) {
+            if (key.worldId().equals(worldId)
+                    && key.x() == top.getX()
+                    && key.y() < top.getY()
+                    && key.z() == top.getZ()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void forgetChunk(UUID worldId, int chunkX, int chunkZ) {
@@ -481,31 +534,26 @@ final class HiddenBeaconService implements Listener {
         );
     }
 
-    private static double resolveEffectRange(Beacon beacon, int calculatedTier) {
-        double vanillaRange = BeaconMath.rangeForTier(calculatedTier);
-        if (PAPER_GET_EFFECT_RANGE == null) {
-            return vanillaRange;
+    private double resolveEffectRange(Beacon beacon, int calculatedTier) {
+        double configuredRange = compatibility.readConfiguredRange(beacon);
+        if (Double.isFinite(configuredRange)) {
+            return effectiveRange(configuredRange, calculatedTier);
         }
 
-        try {
-            double paperRange = ((Number) PAPER_GET_EFFECT_RANGE.invoke(beacon)).doubleValue();
-            double staleDefault = BeaconMath.rangeForTier(beacon.getTier());
-            if (!Double.isFinite(paperRange) || paperRange < 0.0D
-                    || Math.abs(paperRange - staleDefault) < 0.000_001D) {
-                return vanillaRange;
-            }
-            return paperRange;
-        } catch (IllegalAccessException | InvocationTargetException | ClassCastException ignored) {
+        double vanillaRange = BeaconMath.rangeForTier(calculatedTier);
+        double publicRange = compatibility.readPublicEffectRange(beacon);
+        double staleDefault = BeaconMath.rangeForTier(beacon.getTier());
+        if (!Double.isFinite(publicRange) || publicRange < 0.0D
+                || Math.abs(publicRange - staleDefault) < 0.000_001D) {
             return vanillaRange;
         }
+        return publicRange;
     }
 
-    private static Method findPaperEffectRangeMethod() {
-        try {
-            return Beacon.class.getMethod("getEffectRange");
-        } catch (NoSuchMethodException ignored) {
-            return null;
-        }
+    static double effectiveRange(double configuredRange, int calculatedTier) {
+        return Double.isFinite(configuredRange) && configuredRange >= 0.0D
+                ? configuredRange
+                : BeaconMath.rangeForTier(calculatedTier);
     }
 
 }

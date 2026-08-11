@@ -24,17 +24,16 @@ repositories {
 }
 
 dependencies {
-    // Compiling against the oldest useful API prevents accidental use of newer,
-    // incompatible Bukkit methods. Tinted glass was introduced in Minecraft 1.17.
+    // Tinted glass was introduced in Minecraft 1.17. Compiling against that
+    // API prevents accidental use of Bukkit methods introduced later.
     compileOnly("org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT")
 
     testImplementation("org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT")
-    // JUnit 5 still supports Java 16, matching the plugin's compatibility target.
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // A second compilation pass guards the primary target against API drift.
+    // Paper 26.2 remains the primary target and gets its own API drift check.
     paper26Check("io.papermc.paper:paper-api:26.2.build.102-stable")
 }
 
@@ -43,8 +42,11 @@ java {
     withSourcesJar()
 }
 
+base {
+    archivesName.set("SimpleNoBeamBeacon-Paper")
+}
+
 tasks.withType<JavaCompile>().configureEach {
-    // Minecraft 1.17 runs on Java 16. Newer servers can load this bytecode too.
     options.release.set(16)
     options.encoding = "UTF-8"
 }
@@ -56,16 +58,12 @@ tasks.processResources {
     }
 }
 
-tasks.jar {
-    archiveBaseName.set("SimpleNoBeamBeacon-Bukkit")
-}
-
 tasks.test {
     useJUnitPlatform()
 }
 
 val compilePaper26CheckJava = tasks.register<JavaCompile>("compilePaper26CheckJava") {
-    description = "Compiles the Bukkit sources against the Paper 26.2 API."
+    description = "Compiles the plugin sources against the Paper 26.2 API."
     source = sourceSets.main.get().allJava
     classpath = paper26Check
     destinationDirectory.set(layout.buildDirectory.dir("paper26-check/classes"))

@@ -1,54 +1,54 @@
 # SimpleNoBeamBeacon
 
-A small server-side plugin that lets tinted glass hide a beacon beam without disabling the beacon's effects. Players do not need to install a mod or resource pack.
+SimpleNoBeamBeacon is a server-side plugin built primarily for Paper 26.2. It keeps a beacon's effects active when tinted glass hides the native beam.
 
 ## Compatibility
 
-| Artifact | Platforms | Minecraft | Server Java |
+| Artifact | Server | Minecraft | Java |
 | --- | --- | --- | --- |
-| `SimpleNoBeamBeacon-Bukkit-1.0.0.jar` | Paper, Spigot, Bukkit/CraftBukkit, and Purpur | 1.17–26.2 | Whatever the server version requires |
-| The same Bukkit JAR | Folia | Folia versions based on 1.19.4–26.2 | Whatever the server version requires |
-| `SimpleNoBeamBeacon-Sponge-26.2-1.0.0.jar` | Experimental SpongeVanilla | 26.2 | Java 25 |
+| `SimpleNoBeamBeacon-Paper-1.1.0.jar` | Paper | 26.2 (primary target) | 25 |
+| The same JAR | Paper, Spigot, or compatible forks | 1.17.1 and newer (additional compatibility) | Whatever the server requires |
 
-Minecraft 1.17 is the oldest supported version because it introduced tinted glass. The Bukkit JAR is compiled against Spigot API 1.17.1 as Java 16 bytecode and is also checked against Paper 26.2.
+Paper 26.2 is the primary implementation and validation target. The release JAR nevertheless uses Java 16 bytecode, is compiled against the Bukkit 1.17.1 API, and declares `api-version: 1.17`. Its `Paper` filename describes the primary target; it is not a hard Paper dependency.
 
-Sponge uses a different API and plugin loader, so it requires a separate JAR. Sponge 26.2/API 20 is still experimental at the time of this release.
+For Paper 26.2, the plugin dynamically reads the server's real light-dampening and beacon-selection data, without linking the JAR to version-specific classes. Older Bukkit-derived servers use the same bridge when their internal layout is recognised and otherwise fall back to the public Bukkit API. That fallback explicitly handles the important barrier, bedrock, slime-block, and tinted-glass mismatches, but unusual technical block states may still differ from vanilla on a server version whose internals are not recognised.
 
 ## Installation
 
-1. Download the JAR for your server.
-2. Paper, Spigot, Bukkit, Purpur, or Folia: place the Bukkit JAR in `plugins/`.
-3. SpongeVanilla 26.2: place the Sponge JAR directly in `mods/`, not `mods/plugins/`, because it contains a Mixin.
-4. Restart the server.
-5. Select the beacon effect and let the beacon activate at least once. Then place tinted glass anywhere in the vertical column above the beacon.
+1. Build or download `SimpleNoBeamBeacon-Paper-1.1.0.jar`.
+2. Put it in the server's `plugins/` directory.
+3. Restart the server.
+4. Activate and configure the beacon before covering it with tinted glass.
 
-There are no commands, permissions, or required configuration files.
+There are no commands, permissions, dependencies, or configuration files.
 
-## Implementation
+## Behaviour
 
-Tinted glass already hides the beam on the client, but vanilla Minecraft also treats it as an obstruction on the server and stops applying beacon effects. Bukkit does not provide a public API for changing only that obstruction rule.
+For a beacon column containing tinted glass, the plugin:
 
-The Bukkit build tracks covered beacons and reapplies their effects using vanilla range, duration, pyramid, and effect-level rules. It also handles chunk and block changes, piston movement, world lifecycle, and Folia's region-safe schedulers without relying on version-specific server internals.
-
-The Sponge build uses a server-side Mixin to change the exact obstruction check. The client still sees real tinted glass and hides the beam, while the server keeps native beacon behavior.
-
-## Behavior
-
-The Bukkit build:
-
+- ignores every tinted-glass block when deciding whether the beacon may apply effects;
+- continues checking above the first tinted glass, so a later opaque block still disables the beacon effects;
+- lets barrier and every other block accepted by the recognised vanilla obstruction rule pass, whether they are below or above the tinted glass;
 - recalculates all four pyramid levels;
-- uses vanilla ranges of 20, 30, 40, or 50 blocks;
-- uses vanilla effect durations and refreshes every 80 ticks;
-- supports primary effect level II and regeneration as a secondary effect;
-- respects custom Paper effect ranges;
-- stops applying effects if the pyramid, beacon, tinted glass, or sky access becomes invalid;
-- uses region and entity schedulers on Folia.
+- preserves the selected primary effect, primary level II, regeneration, and other valid secondary effects on Paper 26.2;
+- uses vanilla ranges and durations and respects a custom Paper effect range;
+- reacts to block placement, breaking, pistons, explosions, chunk lifecycle, and periodic fallback scans.
 
-Removing the tinted glass immediately restores fully vanilla behavior.
+On Paper 26.2, the obstruction check uses the same `BlockState#getLightDampening()` threshold and bedrock exception as the server's vanilla beacon scan. It deliberately treats tinted glass as transparent only for the invisible, effect-producing scan. It does not use Bukkit's unrelated `Material#isOccluding()` result when the exact server data is available, which fixes the barrier problem.
+
+Removing the last tinted-glass block returns the beacon to normal vanilla effect handling. Placing an actual vanilla beam blocker anywhere in the column, including above tinted glass, stops replacement effects and lets already-applied effects expire normally.
+
+## Visual limitation
+
+A server-only plugin cannot make the native beam remain visible below tinted glass while hiding it above the glass for unmodified clients.
+
+In Minecraft 26.2, the client scans the beacon column itself. When it reaches tinted glass, it clears the complete list of beam sections, including all coloured sections below that glass; the server does not send those sections in a packet. If the server instead presents tinted glass as transparent, the client renderer extends the final beam section towards the sky rather than ending it at that glass.
+
+An exact visual implementation therefore requires a client mod that changes both the client-side column scan and renderer. Particles or display entities could only imitate the native beam, with different texture, animation, glow, colouring, render distance, and graphics-setting behaviour. This plugin keeps the server mechanics correct and does not add that inaccurate imitation.
 
 ## Building
 
-JDK 25 is required to build and validate the 26.2 variant:
+JDK 25 is required to run the build because it includes a separate compile check against Paper 26.2:
 
 ```bash
 ./gradlew clean build
@@ -60,15 +60,13 @@ On Windows:
 .\gradlew.bat clean build
 ```
 
-The JARs are written to `bukkit/build/libs/` and `sponge/build/libs/`.
+The server JAR is written to `bukkit/build/libs/`. Although JDK 25 runs the build, the resulting plugin classes target Java 16.
 
-## Known limitations
+## Other limitations
 
-- For compatibility back to 1.17, the Bukkit JAR uses only public Bukkit API. Reapplied effects do not fire Paper's `BeaconEffectEvent`, and `EntityPotionEffectEvent` reports the plugin rather than a beacon as the cause.
-- Bukkit does not expose the exact light opacity of every block state. Normal blocks behave as expected, but a few unusual technical block states may differ from vanilla obstruction behavior.
-- Bukkit does not expose a secondary selection before a new beacon has activated. Let a new beacon apply its selected effect once before covering it, especially when using regeneration or primary effect level II.
-- A server configured with `minimum-api` above 1.17 in `bukkit.yml` will reject plugins that declare the older API level.
-- The Sponge JAR targets Minecraft 26.2 internals and must not be used on another version.
+- Reapplied effects do not fire Paper's `BeaconEffectEvent`; `EntityPotionEffectEvent` reports the plugin rather than a beacon as the cause.
+- On an additional server version whose internal beacon-selection layout is not recognised, the public-API fallback can preserve a selection captured during an earlier refresh. After a restart, temporarily uncovering and reactivating such a beacon may be necessary to recover secondary or level-II selection data.
+- A future server version can change internal layouts. In that case the JAR still avoids a linkage crash and uses its compatibility fallback, but that fallback may not reproduce every unusual vanilla block state exactly.
 
 ## License
 

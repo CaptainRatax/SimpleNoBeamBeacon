@@ -176,11 +176,6 @@ final class CompatibleScheduler implements SchedulerFacade {
         );
     }
 
-    @Override
-    public boolean isFolia() {
-        return folia;
-    }
-
     private void cancelFoliaTask(Object scheduledTask) {
         try {
             scheduledTaskCancel.invoke(scheduledTask);

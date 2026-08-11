@@ -20,6 +20,4 @@ interface SchedulerFacade {
     );
 
     void runLater(Location location, long delayTicks, Runnable task);
-
-    boolean isFolia();
 }

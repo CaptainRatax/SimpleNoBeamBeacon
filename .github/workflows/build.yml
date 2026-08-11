@@ -31,7 +31,5 @@ jobs:
         with:
           name: SimpleNoBeamBeacon
           path: |
-            bukkit/build/libs/SimpleNoBeamBeacon-Bukkit-*.jar
-            sponge/build/libs/SimpleNoBeamBeacon-Sponge-26.2-*.jar
+            bukkit/build/libs/SimpleNoBeamBeacon-Paper-*.jar
             !bukkit/build/libs/*-sources.jar
-            !sponge/build/libs/*-sources.jar

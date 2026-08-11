@@ -16,6 +16,14 @@ class BeaconMathTest {
     }
 
     @Test
+    void preservesExplicitPaperRangesEvenWhenTheyMatchAStaleDefault() {
+        assertEquals(10.0D, HiddenBeaconService.effectiveRange(10.0D, 4));
+        assertEquals(37.5D, HiddenBeaconService.effectiveRange(37.5D, 4));
+        assertEquals(50.0D, HiddenBeaconService.effectiveRange(-1.0D, 4));
+        assertEquals(50.0D, HiddenBeaconService.effectiveRange(Double.NaN, 4));
+    }
+
+    @Test
     void usesVanillaEffectDurationsForAllTiers() {
         assertEquals(220, BeaconMath.effectDurationTicks(1));
         assertEquals(260, BeaconMath.effectDurationTicks(2));

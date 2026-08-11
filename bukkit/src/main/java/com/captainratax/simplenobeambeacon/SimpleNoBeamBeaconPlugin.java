@@ -11,8 +11,7 @@ public final class SimpleNoBeamBeaconPlugin extends JavaPlugin {
         service = new HiddenBeaconService(this, scheduler);
         service.start();
 
-        getLogger().info("Enabled on " + (scheduler.isFolia() ? "Folia" : "Bukkit/Paper")
-                + "; tinted glass above beacons now hides their beam without losing effects.");
+        getLogger().info("Enabled; tinted glass now stops the visible beam without losing beacon effects.");
     }
 
     @Override
