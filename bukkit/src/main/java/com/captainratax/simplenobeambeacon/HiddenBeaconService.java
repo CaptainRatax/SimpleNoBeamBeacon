@@ -14,6 +14,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
@@ -49,6 +50,7 @@ final class HiddenBeaconService implements Listener {
     private final ConcurrentHashMap<BeaconKey, Object> tracked = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<BeaconKey, HiddenBeacon> active = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Object> scheduledPlayers = new ConcurrentHashMap<>();
+    private volatile boolean running;
 
     HiddenBeaconService(Plugin plugin, SchedulerFacade scheduler) {
         this.plugin = plugin;
@@ -57,6 +59,10 @@ final class HiddenBeaconService implements Listener {
     }
 
     void start() {
+        if (running) {
+            return;
+        }
+        running = true;
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
         for (World world : Bukkit.getWorlds()) {
@@ -70,6 +76,8 @@ final class HiddenBeaconService implements Listener {
     }
 
     void stop() {
+        running = false;
+        HandlerList.unregisterAll(this);
         tracked.clear();
         active.clear();
         scheduledPlayers.clear();
@@ -166,6 +174,9 @@ final class HiddenBeaconService implements Listener {
     }
 
     private void inspectChangedBlock(Block block) {
+        if (!running) {
+            return;
+        }
         if (block.getType() == Material.BEACON) {
             trackIfHidden(block);
         }
@@ -183,14 +194,23 @@ final class HiddenBeaconService implements Listener {
     }
 
     private void trackIfHidden(Block candidate) {
-        if (candidate.getType() != Material.BEACON
-                || (scanBeamColumn(candidate) & BEAM_COLUMN_HAS_TINTED_GLASS) == 0) {
+        if (!running || candidate.getType() != Material.BEACON) {
+            return;
+        }
+        int beamColumn = scanBeamColumn(candidate);
+        if (!running || (beamColumn & BEAM_COLUMN_HAS_TINTED_GLASS) == 0) {
             return;
         }
 
         BeaconKey key = BeaconKey.from(candidate.getLocation());
         Object generation = new Object();
         Object existingGeneration = tracked.putIfAbsent(key, generation);
+        if (!running) {
+            if (existingGeneration == null) {
+                tracked.remove(key, generation);
+            }
+            return;
+        }
         if (existingGeneration != null) {
             refresh(key, existingGeneration);
             return;
@@ -207,7 +227,7 @@ final class HiddenBeaconService implements Listener {
     }
 
     private boolean refresh(BeaconKey key, Object generation) {
-        if (tracked.get(key) != generation) {
+        if (!running || tracked.get(key) != generation) {
             return false;
         }
 
@@ -324,6 +344,9 @@ final class HiddenBeaconService implements Listener {
     }
 
     private void schedulePlayer(Player player) {
+        if (!running) {
+            return;
+        }
         UUID playerId = player.getUniqueId();
         Object generation = new Object();
         if (scheduledPlayers.putIfAbsent(playerId, generation) != null) {
@@ -335,7 +358,9 @@ final class HiddenBeaconService implements Listener {
                 1L,
                 REFRESH_PERIOD_TICKS,
                 () -> {
-                    if (scheduledPlayers.get(playerId) != generation || !player.isOnline()) {
+                    if (!running
+                            || scheduledPlayers.get(playerId) != generation
+                            || !player.isOnline()) {
                         return false;
                     }
                     applyEffects(player, active.values());
@@ -394,6 +419,9 @@ final class HiddenBeaconService implements Listener {
     }
 
     private void scanChunk(Chunk chunk) {
+        if (!running) {
+            return;
+        }
         for (BlockState state : chunk.getTileEntities()) {
             if (state instanceof Beacon) {
                 trackIfHidden(state.getBlock());
@@ -405,7 +433,7 @@ final class HiddenBeaconService implements Listener {
         World world = chunk.getWorld();
         Location anchor = new Location(world, (chunk.getX() << 4) + 8, world.getMinHeight(), (chunk.getZ() << 4) + 8);
         scheduler.runLater(anchor, 1L, () -> {
-            if (world.isChunkLoaded(chunk.getX(), chunk.getZ())) {
+            if (running && world.isChunkLoaded(chunk.getX(), chunk.getZ())) {
                 scanChunk(world.getChunkAt(chunk.getX(), chunk.getZ()));
             }
         });
@@ -434,6 +462,9 @@ final class HiddenBeaconService implements Listener {
 
     private void scheduleChangedBlockScan(Location location) {
         scheduler.runLater(location, 1L, () -> {
+            if (!running) {
+                return;
+            }
             World world = location.getWorld();
             if (world == null) {
                 return;

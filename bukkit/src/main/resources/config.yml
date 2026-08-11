@@ -1,0 +1,2 @@
+# Enables or disables hidden-beacon handling while keeping the plugin loaded.
+enabled: true

@@ -5,3 +5,14 @@ description: Keeps beacon effects active when tinted glass hides the beam.
 author: CaptainRatax
 license: MIT
 api-version: '1.17'
+commands:
+  simplenobeambeacon:
+    description: Reloads or enables/disables hidden-beacon handling.
+    usage: /<command> <reload|set <enabled|disabled>>
+    aliases: [snbb]
+    permission: simplenobeambeacon.admin
+    permission-message: You must be a server operator to use this command.
+permissions:
+  simplenobeambeacon.admin:
+    description: Allows management of SimpleNoBeamBeacon.
+    default: op

@@ -20,7 +20,29 @@ For Paper 26.2, the plugin dynamically reads the server's real light-dampening a
 3. Restart the server.
 4. Activate and configure the beacon before covering it with tinted glass.
 
-There are no commands, permissions, dependencies, or configuration files.
+No dependencies, client mods, or resource packs are required.
+
+## Configuration
+
+The plugin creates `plugins/SimpleNoBeamBeacon/config.yml` on first startup:
+
+```yaml
+enabled: true
+```
+
+Set `enabled` to `false` to stop hidden-beacon handling while keeping the plugin loaded and its administrative command available. Changes made directly to the file take effect after a server restart or `/simplenobeambeacon reload`.
+
+Disabling the feature stops tracking and reapplying effects. Effects that were already applied expire naturally, so effects from potions or other beacons are not removed accidentally.
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `/simplenobeambeacon reload` | Reloads `config.yml` and restarts the beacon service when enabled. |
+| `/simplenobeambeacon set enabled` | Saves `enabled: true` and reloads the configuration immediately. |
+| `/simplenobeambeacon set disabled` | Saves `enabled: false` and reloads the configuration immediately. |
+
+`/snbb` is the short alias. `/snbb enable` and `/snbb disable` are also accepted as shortcuts. All commands are restricted to server operators and the server console.
 
 ## Behaviour
 
