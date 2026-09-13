@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 64 64"
+     role="img"
+     aria-labelledby="title description">
+  <title id="title">SimpleNoBeamBeacon</title>
+  <desc id="description">A lit beacon block without a visible beam.</desc>
+
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0b1219"/>
+  <rect x="14" y="16" width="36" height="32" rx="6" fill="#172735" stroke="#63e6d3" stroke-width="3"/>
+  <path d="M32 22l12 10-12 10-12-10z" fill="#effffc"/>
+  <path d="M32 27l6 5-6 5-6-5z" fill="#63e6d3"/>
+</svg>
