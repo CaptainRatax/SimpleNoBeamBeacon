@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Documentation for SimpleNoBeamBeacon, a server-side Minecraft plugin that preserves beacon effects when tinted glass hides the native beam.">
+  <meta name="theme-color" content="#0b1219">
+  <title>SimpleNoBeamBeacon Documentation</title>
+
+  <link rel="icon" type="image/svg+xml" href="assets/images/simple-no-beam-beacon.svg">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/themes/dark.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
+</head>
+<body>
+  <div id="app">Loading documentation…</div>
+
+  <script>
+    window.$docsify = {
+      name: 'SimpleNoBeamBeacon',
+      nameLink: '#/',
+      repo: 'CaptainRatax/SimpleNoBeamBeacon',
+      homepage: 'README.md',
+      loadSidebar: true,
+      coverpage: true,
+      auto2top: true,
+      maxLevel: 3,
+      subMaxLevel: 2,
+      search: {
+        paths: 'auto',
+        placeholder: 'Search documentation',
+        noData: 'No results found',
+        depth: 3,
+        namespace: 'simple-no-beam-beacon-docs'
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        errorText: 'Error',
+        successText: 'Copied'
+      },
+      pagination: {
+        previousText: 'Previous',
+        nextText: 'Next',
+        crossChapter: true,
+        crossChapterText: true
+      }
+    };
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/docsify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2.1.1/dist/docsify-copy-code.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination@2.10.1/dist/docsify-pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-powershell.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-yaml.min.js"></script>
+</body>
+</html>
