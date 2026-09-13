@@ -2,6 +2,8 @@
 
 SimpleNoBeamBeacon is a server-side plugin built primarily for Paper 26.2. It keeps a beacon's effects active when tinted glass hides the native beam.
 
+**Documentation:** [simplenobeambeacon-docs.captainratax.com](https://simplenobeambeacon-docs.captainratax.com/)
+
 ## Compatibility
 
 | Artifact | Server | Minecraft | Java |
