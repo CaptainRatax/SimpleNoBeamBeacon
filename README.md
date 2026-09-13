@@ -13,9 +13,15 @@ Paper 26.2 is the primary implementation and validation target. The release JAR 
 
 For Paper 26.2, the plugin dynamically reads the server's real light-dampening and beacon-selection data, without linking the JAR to version-specific classes. Older Bukkit-derived servers use the same bridge when their internal layout is recognised and otherwise fall back to the public Bukkit API. That fallback explicitly handles the important barrier, bedrock, slime-block, and tinted-glass mismatches, but unusual technical block states may still differ from vanilla on a server version whose internals are not recognised.
 
+## Downloads
+
+- [Modrinth](https://modrinth.com/plugin/simplenobeambeacon)
+- [CurseForge](https://www.curseforge.com/minecraft/bukkit-plugins/simplenobeambeacon)
+- [GitHub Releases](https://github.com/CaptainRatax/SimpleNoBeamBeacon/releases)
+
 ## Installation
 
-1. Build or download `SimpleNoBeamBeacon-Paper-1.1.0.jar`.
+1. Download `SimpleNoBeamBeacon-Paper-1.1.0.jar` from one of the links above, or build it from source.
 2. Put it in the server's `plugins/` directory.
 3. Restart the server.
 4. Activate and configure the beacon before covering it with tinted glass.

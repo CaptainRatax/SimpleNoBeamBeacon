@@ -40,8 +40,13 @@ Compatibility outside the primary target uses dynamically discovered server data
 
 See [How It Works](how-it-works.md) for exact conditions, update behavior, and limitations. The plugin has one global setting and operator-only administration; see [Configuration & Commands](administration.md).
 
+## Downloads
+
+- [Modrinth](https://modrinth.com/plugin/simplenobeambeacon)
+- [CurseForge](https://www.curseforge.com/minecraft/bukkit-plugins/simplenobeambeacon)
+- [GitHub Releases](https://github.com/CaptainRatax/SimpleNoBeamBeacon/releases)
+
 ## Project
 
 - [Source repository](https://github.com/CaptainRatax/SimpleNoBeamBeacon)
-- [Releases](https://github.com/CaptainRatax/SimpleNoBeamBeacon/releases)
 - [MIT license](https://github.com/CaptainRatax/SimpleNoBeamBeacon/blob/main/LICENSE)
