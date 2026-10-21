@@ -34,7 +34,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // Paper 26.2 remains the primary target and gets its own API drift check.
-    paper26Check("io.papermc.paper:paper-api:26.2.build.102-stable")
+    paper26Check("io.papermc.paper:paper-api:26.3.build.211-stable")
 }
 
 java {
@@ -63,7 +63,7 @@ tasks.test {
 }
 
 val compilePaper26CheckJava = tasks.register<JavaCompile>("compilePaper26CheckJava") {
-    description = "Compiles the plugin sources against the Paper 26.2 API."
+    description = "Compiles the plugin sources against the Paper 26.3 API."
     source = sourceSets.main.get().allJava
     classpath = paper26Check
     destinationDirectory.set(layout.buildDirectory.dir("paper26-check/classes"))

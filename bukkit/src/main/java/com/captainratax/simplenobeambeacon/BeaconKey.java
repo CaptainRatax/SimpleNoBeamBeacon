@@ -53,10 +53,9 @@ final class BeaconKey {
         if (this == other) {
             return true;
         }
-        if (!(other instanceof BeaconKey)) {
+        if (!(other instanceof BeaconKey that)) {
             return false;
         }
-        BeaconKey that = (BeaconKey) other;
         return x == that.x && y == that.y && z == that.z && worldId.equals(that.worldId);
     }
 

@@ -524,7 +524,7 @@ final class ServerCompatibility {
 
     private static Throwable unwrap(Throwable exception) {
         if (exception instanceof InvocationTargetException) {
-            Throwable cause = ((InvocationTargetException) exception).getCause();
+            Throwable cause = exception.getCause();
             if (cause != null) {
                 return cause;
             }
