@@ -33,7 +33,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // Paper 26.2 remains the primary target and gets its own API drift check.
+    // Paper 26.3 remains the primary target and gets its own API drift check.
     paper26Check("io.papermc.paper:paper-api:26.3.build.211-stable")
 }
 

@@ -4,9 +4,9 @@
 
 Check the following:
 
-1. Install `SimpleNoBeamBeacon-Paper-1.1.0.jar`, not the `-sources.jar` file.
+1. Install `SimpleNoBeamBeacon-Paper-1.2.0.jar`, not the `-sources.jar` file.
 2. Put the JAR in the server's `plugins/` directory, not a client or Sponge `mods/` directory.
-3. Use Paper 26.2 with Java 25 for the primary target. For the additional 1.17.1+ compatibility range, use the Java version required by that server and never less than Java 16 for this plugin's bytecode.
+3. Use Paper 26.3 with Java 25 for the primary target. For the additional 1.17.1+ compatibility range, use the Java version required by that server and never less than Java 16 for this plugin's bytecode.
 4. Do not run duplicate SimpleNoBeamBeacon versions at the same time.
 5. Check the startup log for the first exception involving `SimpleNoBeamBeacon`.
 
@@ -16,7 +16,7 @@ The plugin has no mandatory plugin dependency. A missing-dependency error theref
 
 SimpleNoBeamBeacon does not hide beams itself. Confirm that the block directly in the beacon's X/Z column is **tinted glass**, not ordinary glass or stained glass.
 
-On an unmodified Minecraft 26.2 client, tinted glass removes the entire native beam. Client mods, shaders, and other rendering changes are outside this server plugin's control. Compare with an unmodified client before reporting a beam-rendering problem.
+On an unmodified Minecraft 26.3 client, tinted glass removes the entire native beam. Client mods, shaders, and other rendering changes are outside this server plugin's control. Compare with an unmodified client before reporting a beam-rendering problem.
 
 ## The beam is hidden but effects are missing
 

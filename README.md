@@ -1,6 +1,6 @@
 # SimpleNoBeamBeacon
 
-SimpleNoBeamBeacon is a server-side plugin built primarily for Paper 26.2. It keeps a beacon's effects active when tinted glass hides the native beam.
+SimpleNoBeamBeacon is a server-side plugin built primarily for Paper 26.3. It keeps a beacon's effects active when tinted glass hides the native beam.
 
 **Documentation:** [simplenobeambeacon-docs.captainratax.com](https://simplenobeambeacon-docs.captainratax.com/)
 
@@ -8,12 +8,12 @@ SimpleNoBeamBeacon is a server-side plugin built primarily for Paper 26.2. It ke
 
 | Artifact | Server | Minecraft | Java |
 | --- | --- | --- | --- |
-| `SimpleNoBeamBeacon-Paper-1.1.0.jar` | Paper | 26.2 (primary target) | 25 |
+| `SimpleNoBeamBeacon-Paper-1.2.0.jar` | Paper | 26.3 (primary target) | 25 |
 | The same JAR | Paper, Spigot, or compatible forks | 1.17.1 and newer (additional compatibility) | Whatever the server requires |
 
-Paper 26.2 is the primary implementation and validation target. The release JAR nevertheless uses Java 16 bytecode, is compiled against the Bukkit 1.17.1 API, and declares `api-version: 1.17`. Its `Paper` filename describes the primary target; it is not a hard Paper dependency.
+Paper 26.3 is the primary implementation and validation target. The release JAR nevertheless uses Java 16 bytecode, is compiled against the Bukkit 1.17.1 API, and declares `api-version: 1.17`. Its `Paper` filename describes the primary target; it is not a hard Paper dependency.
 
-For Paper 26.2, the plugin dynamically reads the server's real light-dampening and beacon-selection data, without linking the JAR to version-specific classes. Older Bukkit-derived servers use the same bridge when their internal layout is recognised and otherwise fall back to the public Bukkit API. That fallback explicitly handles the important barrier, bedrock, slime-block, and tinted-glass mismatches, but unusual technical block states may still differ from vanilla on a server version whose internals are not recognised.
+For Paper 26.3, the plugin dynamically reads the server's real light-dampening and beacon-selection data, without linking the JAR to version-specific classes. Older Bukkit-derived servers use the same bridge when their internal layout is recognised and otherwise fall back to the public Bukkit API. That fallback explicitly handles the important barrier, bedrock, slime-block, and tinted-glass mismatches, but unusual technical block states may still differ from vanilla on a server version whose internals are not recognised.
 
 ## Downloads
 
@@ -23,7 +23,7 @@ For Paper 26.2, the plugin dynamically reads the server's real light-dampening a
 
 ## Installation
 
-1. Download `SimpleNoBeamBeacon-Paper-1.1.0.jar` from one of the links above, or build it from source.
+1. Download `SimpleNoBeamBeacon-Paper-1.2.0.jar` from one of the links above, or build it from source.
 2. Put it in the server's `plugins/` directory.
 3. Restart the server.
 4. Activate and configure the beacon before covering it with tinted glass.
@@ -60,11 +60,11 @@ For a beacon column containing tinted glass, the plugin:
 - continues checking above the first tinted glass, so a later opaque block still disables the beacon effects;
 - lets barrier and every other block accepted by the recognised vanilla obstruction rule pass, whether they are below or above the tinted glass;
 - recalculates all four pyramid levels;
-- preserves the selected primary effect, primary level II, regeneration, and other valid secondary effects on Paper 26.2;
+- preserves the selected primary effect, primary level II, regeneration, and other valid secondary effects on Paper 26.3;
 - uses vanilla ranges and durations and respects a custom Paper effect range;
 - reacts to block placement, breaking, pistons, explosions, chunk lifecycle, and periodic fallback scans.
 
-On Paper 26.2, the obstruction check uses the same `BlockState#getLightDampening()` threshold and bedrock exception as the server's vanilla beacon scan. It deliberately treats tinted glass as transparent only for the invisible, effect-producing scan. It does not use Bukkit's unrelated `Material#isOccluding()` result when the exact server data is available, which fixes the barrier problem.
+On Paper 26.3, the obstruction check uses the same `BlockState#getLightDampening()` threshold and bedrock exception as the server's vanilla beacon scan. It deliberately treats tinted glass as transparent only for the invisible, effect-producing scan. It does not use Bukkit's unrelated `Material#isOccluding()` result when the exact server data is available, which fixes the barrier problem.
 
 Removing the last tinted-glass block returns the beacon to normal vanilla effect handling. Placing an actual vanilla beam blocker anywhere in the column, including above tinted glass, stops replacement effects and lets already-applied effects expire normally.
 
@@ -72,13 +72,13 @@ Removing the last tinted-glass block returns the beacon to normal vanilla effect
 
 A server-only plugin cannot make the native beam remain visible below tinted glass while hiding it above the glass for unmodified clients.
 
-In Minecraft 26.2, the client scans the beacon column itself. When it reaches tinted glass, it clears the complete list of beam sections, including all coloured sections below that glass; the server does not send those sections in a packet. If the server instead presents tinted glass as transparent, the client renderer extends the final beam section towards the sky rather than ending it at that glass.
+In Minecraft 26.3, the client scans the beacon column itself. When it reaches tinted glass, it clears the complete list of beam sections, including all coloured sections below that glass; the server does not send those sections in a packet. If the server instead presents tinted glass as transparent, the client renderer extends the final beam section towards the sky rather than ending it at that glass.
 
 An exact visual implementation therefore requires a client mod that changes both the client-side column scan and renderer. Particles or display entities could only imitate the native beam, with different texture, animation, glow, colouring, render distance, and graphics-setting behaviour. This plugin keeps the server mechanics correct and does not add that inaccurate imitation.
 
 ## Building
 
-JDK 25 is required to run the build because it includes a separate compile check against Paper 26.2:
+JDK 25 is required to run the build because it includes a separate compile check against Paper 26.3:
 
 ```bash
 ./gradlew clean build

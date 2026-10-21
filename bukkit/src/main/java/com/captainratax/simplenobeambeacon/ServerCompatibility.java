@@ -18,7 +18,7 @@ import java.util.logging.Level;
 
 /**
  * Keeps version-specific server access behind reflection so the plugin can
- * retain a Bukkit 1.17 binary baseline while using the exact Paper 26.2 data.
+ * retain a Bukkit 1.17 binary baseline while using the exact Paper 26.3 data.
  */
 final class ServerCompatibility {
     private static final String PAPER_EFFECT_RANGE_TAG = "Paper.Range";
