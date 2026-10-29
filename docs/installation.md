@@ -24,7 +24,7 @@ There are no required or optional plugin dependencies. Players do not need a cli
 1. Stop the Minecraft server.
 2. Download the current installable JAR from [Modrinth](https://modrinth.com/plugin/simplenobeambeacon), [CurseForge](https://www.curseforge.com/minecraft/bukkit-plugins/simplenobeambeacon), or [GitHub Releases](https://github.com/CaptainRatax/SimpleNoBeamBeacon/releases). You can also [build it from source](building.md).
 3. Make sure you have `SimpleNoBeamBeacon-Paper-1.2.0.jar`, not the `-sources.jar` file.
-4. Remove any older SimpleNoBeamBeacon JAR from the server. Do not keep version 1.0.0 and 1.2.0 installed together.
+4. Remove any previous SimpleNoBeamBeacon JAR from the server before installing the new version.
 5. Copy the JAR into the server's `plugins/` directory.
 6. Start the server. Use a full start or restart when installing or replacing the JAR.
 7. Activate a beacon and select its powers before placing tinted glass in the same vertical column above it.

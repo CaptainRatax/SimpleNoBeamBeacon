@@ -1,6 +1,6 @@
 # Building from source
 
-SimpleNoBeamBeacon uses a Gradle Kotlin DSL build and includes the Gradle 9.6.1 wrapper. Maven is not used.
+SimpleNoBeamBeacon uses a Gradle Kotlin DSL build and includes the Gradle 9.8.1 wrapper. Maven is not used.
 
 ## Prerequisites
 
