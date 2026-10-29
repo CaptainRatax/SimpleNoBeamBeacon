@@ -1,6 +1,6 @@
 # SimpleNoBeamBeacon
 
-SimpleNoBeamBeacon 1.1.0 is a server-side Minecraft plugin that preserves beacon potion effects when tinted glass hides the native beacon beam. It is primarily implemented and validated for Paper 26.2, with an additional Bukkit-compatible baseline of Minecraft 1.17.1 and newer.
+SimpleNoBeamBeacon 1.2.0 is a server-side Minecraft plugin that preserves beacon potion effects when tinted glass hides the native beacon beam. It is primarily implemented and validated for Paper 26.3, with an additional Bukkit-compatible baseline of Minecraft 1.17.1 and newer.
 
 ?> Tinted glass hides the beam through normal client behavior. The plugin does not remove beams with packets or change what blocks a player sees.
 
@@ -16,14 +16,14 @@ When the feature is enabled, the plugin handles only beacons with at least one t
 
 The beacon block, pyramid, and selected powers are not changed. The replacement effects are applied by the plugin, rather than by Minecraft's native beacon effect process.
 
-!> On an unmodified Minecraft 26.2 client, tinted glass hides the **entire** native beam, including the part below the glass. This plugin does not create a partial imitation with particles or display entities.
+!> On an unmodified Minecraft 26.3 client, tinted glass hides the **entire** native beam, including the part below the glass. This plugin does not create a partial imitation with particles or display entities.
 
 ## Compatibility at a glance
 
 | Item | Current repository information |
 | --- | --- |
-| Version | `1.1.0` |
-| Primary target | Paper 26.2 / Minecraft 26.2 / Java 25 |
+| Version | `1.2.0` |
+| Primary target | Paper 26.3 / Minecraft 26.3 / Java 25 |
 | Additional compatibility | Paper, Spigot, and compatible Bukkit-derived forks on Minecraft 1.17.1+ |
 | Plugin bytecode | Java 16 |
 | Runtime dependencies | None |

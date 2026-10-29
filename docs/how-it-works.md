@@ -57,13 +57,13 @@ Tracked beacons are also refreshed every 80 ticks. There is no persistent beacon
 
 ## Restarts and compatibility fallback
 
-On Paper 26.2, the plugin dynamically reads the server's beacon selection and light-dampening data. On other recognized server layouts it attempts the same approach, then falls back to the public Bukkit API if necessary.
+On Paper 26.3, the plugin dynamically reads the server's beacon selection and light-dampening data. On other recognized server layouts it attempts the same approach, then falls back to the public Bukkit API if necessary.
 
 The fallback corrects known material mismatches for tinted glass, bedrock, barrier, and slime blocks, but unusual technical block states can still differ from vanilla. If a covered beacon loses its secondary or level-II selection after a restart on a non-primary server version, temporarily uncover and reactivate the beacon before covering it again.
 
 ## Visual and plugin interoperability limits
 
-On an unmodified Minecraft 26.2 client, tinted glass clears the complete native beam, including colored sections below the tinted glass. A server-only plugin cannot keep that lower section visible while ending the native beam at the glass. Doing so exactly would require client changes; SimpleNoBeamBeacon intentionally does not add a visual imitation.
+On an unmodified Minecraft 26.3 client, tinted glass clears the complete native beam, including colored sections below the tinted glass. A server-only plugin cannot keep that lower section visible while ending the native beam at the glass. Doing so exactly would require client changes; SimpleNoBeamBeacon intentionally does not add a visual imitation.
 
 Replacement effects do not fire Paper's `BeaconEffectEvent`. An `EntityPotionEffectEvent` sees SimpleNoBeamBeacon, rather than a beacon, as the effect cause. Plugins that depend on native beacon event attribution may therefore observe these effects differently.
 

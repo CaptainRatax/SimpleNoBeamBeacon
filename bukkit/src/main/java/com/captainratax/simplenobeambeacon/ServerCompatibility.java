@@ -18,7 +18,7 @@ import java.util.logging.Level;
 
 /**
  * Keeps version-specific server access behind reflection so the plugin can
- * retain a Bukkit 1.17 binary baseline while using the exact Paper 26.2 data.
+ * retain a Bukkit 1.17 binary baseline while using the exact Paper 26.3 data.
  */
 final class ServerCompatibility {
     private static final String PAPER_EFFECT_RANGE_TAG = "Paper.Range";
@@ -524,7 +524,7 @@ final class ServerCompatibility {
 
     private static Throwable unwrap(Throwable exception) {
         if (exception instanceof InvocationTargetException) {
-            Throwable cause = ((InvocationTargetException) exception).getCause();
+            Throwable cause = exception.getCause();
             if (cause != null) {
                 return cause;
             }

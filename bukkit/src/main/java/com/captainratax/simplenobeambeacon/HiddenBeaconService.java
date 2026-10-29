@@ -255,11 +255,10 @@ final class HiddenBeaconService implements Listener {
         }
 
         BlockState state = beaconBlock.getState();
-        if (!(state instanceof Beacon)) {
+        if (!(state instanceof Beacon beacon)) {
             return deactivateIfCurrent(key, generation);
         }
 
-        Beacon beacon = (Beacon) state;
         ServerCompatibility.SelectedEffects selected = compatibility.readSelectedEffects(beacon);
         if (selected == null) {
             return deactivateIfCurrent(key, generation);
